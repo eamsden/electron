@@ -99,6 +99,7 @@ class Session: public mate::TrackableObject<Session>,
   v8::Global<v8::Value> web_request_;
   v8::Global<v8::Value> user_prefs_;
   v8::Global<v8::Value> autofill_;
+  v8::Global<v8::Value> component_updater_;
 
   // The X-DevTools-Emulate-Network-Conditions-Client-Id.
   std::string devtools_network_emulation_client_id_;

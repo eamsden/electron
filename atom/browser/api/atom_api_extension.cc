@@ -15,7 +15,9 @@
 #include "atom/common/native_mate_converters/value_converter.h"
 #include "atom/common/node_includes.h"
 #include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "components/component_updater/component_updater_paths.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_thread.h"
@@ -217,6 +219,26 @@ void Extension::Enable(const std::string& extension_id) {
         atom::NOTIFICATION_ENABLE_USER_EXTENSION_REQUEST,
         content::Source<Extension>(GetInstance()),
         content::Details<const extensions::Extension>(extension));
+}
+
+// static
+void Extension::Remove(const std::string& extension_id) {
+  if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI))
+    content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+        base::Bind(Remove, extension_id));
+
+  const extensions::Extension* extension =
+    GetInstance()->extensions_.GetByID(extension_id);
+
+  if (!extension)
+    return;
+
+  content::NotificationService::current()->Notify(
+    atom::NOTIFICATION_EXTENSION_UNINSTALL_REQUEST,
+    content::Source<Extension>(GetInstance()),
+    content::Details<const extensions::Extension>(extension));
+    GetInstance()->extensions_.Remove(extension_id);
 }
 
 // static

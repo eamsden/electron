@@ -1,29 +1,29 @@
 def startVM(name) {
-  stage("Create ${/Users/Shared/Jenkins/vagrant/electron-vagrant} ${name} VM") {
-    withEnv(["VAGRANT_DOTFILE_PATH=${env.BUILD_TAG}", "VAGRANT_CWD=${/Users/Shared/Jenkins/vagrant/electron-vagrant}"]) {
+  stage("Create /Users/Shared/Jenkins/vagrant/electron-vagrant ${name} VM") {
+    withEnv(["VAGRANT_DOTFILE_PATH=${env.BUILD_TAG}", "VAGRANT_CWD=/Users/Shared/Jenkins/vagrant/electron-vagrant"]) {
       sh "vagrant up ${name}"
     }
   }
 }
 
 def stopVM(name) {
-  stage("Stop ${/Users/Shared/Jenkins/vagrant/electron-vagrant} ${name} VM") {
-    withEnv(["VAGRANT_DOTFILE_PATH=${env.BUILD_TAG}", "VAGRANT_CWD=${/Users/Shared/Jenkins/vagrant/electron-vagrant}"]) {
+  stage("Stop /Users/Shared/Jenkins/vagrant/electron-vagrant ${name} VM") {
+    withEnv(["VAGRANT_DOTFILE_PATH=${env.BUILD_TAG}", "VAGRANT_CWD=/Users/Shared/Jenkins/vagrant/electron-vagrant"]) {
       sh "vagrant halt ${name}"
     }
   }
 }
 
 def destroyVM(name) {
-  stage("Destroy ${/Users/Shared/Jenkins/vagrant/electron-vagrant} ${name} VM") {
-    withEnv(["VAGRANT_DOTFILE_PATH=${env.BUILD_TAG}", "VAGRANT_CWD=${/Users/Shared/Jenkins/vagrant/electron-vagrant}"]) {
+  stage("Destroy /Users/Shared/Jenkins/vagrant/electron-vagrant ${name} VM") {
+    withEnv(["VAGRANT_DOTFILE_PATH=${env.BUILD_TAG}", "VAGRANT_CWD=/Users/Shared/Jenkins/vagrant/electron-vagrant"]) {
       sh "vagrant destroy -f ${name}"
     }
   }
 }
 
 def vmSSH(name, command) {
-  withEnv(["VAGRANT_DOTFILE_PATH=${env.BUILD_TAG}", "VAGRANT_CWD=${/Users/Shared/Jenkins/vagrant/electron-vagrant}"]) {
+  withEnv(["VAGRANT_DOTFILE_PATH=${env.BUILD_TAG}", "VAGRANT_CWD=/Users/Shared/Jenkins/vagrant/electron-vagrant"]) {
     sh "vagrant ssh -c ${command}"
   }
 }

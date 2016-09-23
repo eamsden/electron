@@ -24,8 +24,16 @@ def destroyVM(name) {
 
 def vmSSH(name, command) {
   withEnv(["VAGRANT_DOTFILE_PATH=${env.BUILD_TAG}", "VAGRANT_CWD=/Users/Shared/Jenkins/vagrant/electron-vagrant"]) {
-    sh "vagrant ssh ${name} -c ${command}"
+    sh "vagrant ssh ${name} -c '${command}'"
   }
+}
+
+def setLinuxDisplay(name) {
+  vmSSH(name, "export DISPLAY=:99.0")
+}
+
+def npmInstall(name, cmd = 'npm') {
+  vmSSH(name, "${cmd} install npm@3.3.12")
 }
 
 def buildElectron() {
@@ -39,6 +47,7 @@ def buildElectron() {
     retry(3) {
       timeout(30) {
         sh "python script/clean.py"
+        sh "npm install npm@3.3.12"
         sh "python script/bootstrap.py -v --target_arch ${env.TARGET_ARCH}"
       }
     }
@@ -64,36 +73,36 @@ def buildElectronVagrant(name) {
     deleteDir()
   }
   stage('Checkout') {
-    vmSSH(name, "'git clone https://github.com/brave/electron.git'")
+    vmSSH(name, "git clone https://github.com/brave/electron.git")
   }
   stage('Bootstrap') {
     retry(3) {
       timeout(30) {
-        vmSSH(name, "'source ~/.profile && cd electron && python script/clean.py'")
-        vmSSH(name, "'source ~/.profile && cd electron && python script/bootstrap.py -v --target_arch ${env.TARGET_ARCH}'")
+        vmSSH(name, "source ~/.profile && cd electron && python script/clean.py")
+        vmSSH(name, "source ~/.profile && cd electron && python script/bootstrap.py -v --target_arch ${env.TARGET_ARCH}")
       }
     }
   }
   stage('Lint') {
-    vmSSH(name, "'source ~/.profile && cd electron && python script/cpplint.py'")
+    vmSSH(name, "source ~/.profile && cd electron && python script/cpplint.py")
   }
   stage('Build') {
-    vmSSH(name, "'source ~/.profile && cd electron && python script/build.py -c R'")
+    vmSSH(name, "source ~/.profile && cd electron && python script/build.py -c R")
   }
   stage('Create Dist') {
-    vmSSH(name, "'source ~/.profile && cd electron && python script/create-dist.py'")
+    vmSSH(name, "source ~/.profile && cd electron && python script/create-dist.py")
   }
   stage('Upload') {
     retry(3) {
-      vmSSH(name, "'source ~/.profile && cd electron && python script/upload.py'")
+      vmSSH(name, "source ~/.profile && cd electron && python script/upload.py")
     }
   }
 }
 
 def installNode(name) {
   stage('install node') {
-    vmSSH(name, "'curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -'")
-    vmSSH(name, "'sudo apt-get install -y nodejs'")
+    vmSSH(name, "curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -")
+    vmSSH(name, "sudo apt-get install -y nodejs")
   }
 }
 
@@ -119,6 +128,7 @@ timestamps {
             destroyVM('win-x64')
             try {
               startVM('win-x64')
+              npmInstall('win-x64', 'npm.cmd')
               buildElectronVagrant('win-x64')
             } finally {
               destroyVM('win-x64')
@@ -132,6 +142,7 @@ timestamps {
             destroyVM('win-ia32')
             try {
               startVM('win-ia32')
+              npmInstall('win-ia32', 'npm.cmd')
               buildElectronVagrant('win-ia32')
             } finally {
               destroyVM('win-ia32')
@@ -146,6 +157,8 @@ timestamps {
             try {
               startVM('linux-x64')
               installNode('linux-x64')
+              setLinuxDisplay('linux-x64')
+              npmInstall('linux-x64')
               buildElectronVagrant('linux-x64')
             } finally {
               destroyVM('linux-x64')

@@ -24,7 +24,7 @@ def destroyVM(name) {
 
 def vmSSH(name, command) {
   withEnv(["VAGRANT_DOTFILE_PATH=${env.BUILD_TAG}", "VAGRANT_CWD=/Users/Shared/Jenkins/vagrant/electron-vagrant"]) {
-    sh "vagrant ssh -c ${command}"
+    sh "vagrant ssh ${name} -c ${command}"
   }
 }
 
@@ -118,28 +118,28 @@ timestamps {
             destroyVM('win-x64')
           }
         }
-      },
-      winia32: {
-        node {
-          withEnv(['TARGET_ARCH=ia32']) {
-            destroyVM('win-ia32')
-            startVM('win-ia32')
-            buildElectronVagrant('win-ia32')
-            destroyVM('win-ia32')
-          }
-        }
-      },
-      linuxx64: {
-        node {
-          withEnv(['TARGET_ARCH=x64']) {
-            destroyVM('linux-x64')
-            startVM('linux-x64')
-            installNode('linux-x64')
-            buildElectronVagrant('linux-x64')
-            destroyVM('linux-x64')
-          }
-        }
       }
+//      winia32: {
+//        node {
+//          withEnv(['TARGET_ARCH=ia32']) {
+//            destroyVM('win-ia32')
+//            startVM('win-ia32')
+//            buildElectronVagrant('win-ia32')
+//            destroyVM('win-ia32')
+//          }
+//        }
+//      },
+//      linuxx64: {
+//        node {
+//          withEnv(['TARGET_ARCH=x64']) {
+//            destroyVM('linux-x64')
+//            startVM('linux-x64')
+//            installNode('linux-x64')
+//            buildElectronVagrant('linux-x64')
+//            destroyVM('linux-x64')
+//          }
+//        }
+//      }
 //      linuxia32: {
 //        node {
 //          withEnv(['TARGET_ARCH=ia32']) {

@@ -114,6 +114,7 @@ timestamps {
       winx64: {
         node {
           withEnv(['TARGET_ARCH=x64']) {
+            destroyVM('win-x64')
             startVM('win-x64')
             buildElectronVagrant('win-x64')
             destroyVM('win-x64')
@@ -123,6 +124,7 @@ timestamps {
       winia32: {
         node {
           withEnv(['TARGET_ARCH=ia32']) {
+            destroyVM('win-ia32')
             startVM('win-ia32')
             buildElectronVagrant('win-ia32')
             destroyVM('win-ia32')
@@ -132,6 +134,7 @@ timestamps {
       linuxx64: {
         node {
           withEnv(['TARGET_ARCH=x64']) {
+            destroyVM('linux-x64')
             startVM('linux-x64')
             installNode('linux-x64')
             buildElectronVagrant('linux-x64')

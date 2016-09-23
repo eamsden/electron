@@ -36,7 +36,6 @@ def buildElectron() {
   }
   stage('Checkout') {
     checkout scm
-//    checkout([$class: 'GitSCM', branches: [[name: env.BRANCH_NAME]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'db49b2ab-61d6-48e3-8710-cac2adb1cf99', url: 'https://github.com/brave/electron']]])
   }
   stage('Bootstrap') {
     retry(3) {
@@ -79,6 +78,44 @@ timestamps {
         node {
           withEnv(['TARGET_ARCH=x64']) {
             buildElectron()
+          }
+        }
+      },
+      winx64: {
+        node {
+          withEnv(['TARGET_ARCH=x64']) {
+            startVM(electronVagrantfilePath, 'win-x64')
+            buildElectron()
+            destroyVM(electronVagrantfilePath, 'win-x64')
+          }
+        }
+      },
+      winia32: {
+        node {
+          withEnv(['TARGET_ARCH=ia32']) {
+            startVM(electronVagrantfilePath, 'win-ia32')
+            buildElectron()
+            destroyVM(electronVagrantfilePath, 'win-ia32')
+          }
+        }
+      },
+      linuxx64: {
+        node {
+          withEnv(['TARGET_ARCH=x64']) {
+            startVM(electronVagrantfilePath, 'linux-x64')
+            installNode()
+            buildElectron()
+            destroyVM(electronVagrantfilePath, 'linux-x64')
+          }
+        }
+      },
+      linuxia32: {
+        node {
+          withEnv(['TARGET_ARCH=ia32']) {
+            startVM(electronVagrantfilePath, 'linux-ia32')
+            installNode()
+            buildElectron()
+            destroyVM(electronVagrantfilePath, 'linux-ia32')
           }
         }
       }

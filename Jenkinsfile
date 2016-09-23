@@ -102,13 +102,13 @@ timestamps {
     // LIBCHROMIUMCONTENT_COMMIT - get from previous job
 
     parallel (
-//      mac: {
-//        node {
-//          withEnv(['TARGET_ARCH=x64']) {
-//            buildElectron()
- //         }
- //       }
- //     },
+      mac: {
+        node {
+          withEnv(['TARGET_ARCH=x64']) {
+            buildElectron()
+          }
+        }
+      },
       winx64: {
         node {
           withEnv(['TARGET_ARCH=x64']) {
@@ -122,37 +122,47 @@ timestamps {
           }
         }
       }
-//      winia32: {
-//        node {
-//          withEnv(['TARGET_ARCH=ia32']) {
-//            destroyVM('win-ia32')
-//            startVM('win-ia32')
-//            buildElectronVagrant('win-ia32')
-//            destroyVM('win-ia32')
-//          }
-//        }
-//      },
-//      linuxx64: {
-//        node {
-//          withEnv(['TARGET_ARCH=x64']) {
-//            destroyVM('linux-x64')
-//            startVM('linux-x64')
-//            installNode('linux-x64')
-//            buildElectronVagrant('linux-x64')
-//            destroyVM('linux-x64')
-//          }
-//        }
-//      }
-//      linuxia32: {
-//        node {
-//          withEnv(['TARGET_ARCH=ia32']) {
-//            startVM('linux-ia32')
-//            installNode('linux-ia32')
-//            buildElectronVagrant('linux-ia32')
-//            destroyVM('linux-ia32')
-//          }
-//        }
-//      }
+      winia32: {
+        node {
+          withEnv(['TARGET_ARCH=ia32']) {
+            destroyVM('win-ia32')
+            try {
+              startVM('win-ia32')
+              buildElectronVagrant('win-ia32')
+            } finally {
+              destroyVM('win-ia32')
+            }
+          }
+        }
+      },
+      linuxx64: {
+        node {
+          withEnv(['TARGET_ARCH=x64']) {
+            destroyVM('linux-x64')
+            try {
+              startVM('linux-x64')
+              installNode('linux-x64')
+              buildElectronVagrant('linux-x64')
+            } finally {
+              destroyVM('linux-x64')
+            }
+          }
+        }
+      }
+      linuxia32: {
+        node {
+          withEnv(['TARGET_ARCH=ia32']) {
+            startVM('linux-ia32')
+            try {
+              installNode('linux-ia32')
+              installNode('linux-ia32')
+              buildElectronVagrant('linux-ia32')
+            } finally {
+              destroyVM('linux-ia32')
+            }
+          }
+        }
+      }
     )
   }
 }

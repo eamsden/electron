@@ -36,7 +36,7 @@ def setLinuxDisplay(name) {
 }
 
 def npmInstall(name, cmd = 'npm') {
-  vmSSH(name, "cd electron && ${cmd} install npm@3.3.12")
+  vmSSH(name, "sh -c \"cd electron; ${cmd} install npm@3.3.12\"")
 }
 
 def buildElectron() {
@@ -85,23 +85,23 @@ def buildElectronVagrant(name, npmCmd = 'npm') {
     }
     stage('VM Bootstrap') {
       retry(3) {
-        vmSSH(name, "source ~/.profile && cd electron && python script/clean.py")
+        vmSSH(name, "sh --rcfile ~/.profile -c \"cd electron; python script/clean.py\"")
         npmInstall(name, npmCmd)
-        vmSSH(name, "source ~/.profile && cd electron && python script/bootstrap.py -v --target_arch ${env.TARGET_ARCH}")
+        vmSSH(name, "sh --rcfile ~/.profile -c \"cd electron; python script/bootstrap.py -v --target_arch ${env.TARGET_ARCH}\"")
       }
     }
     stage('VM Lint') {
-      vmSSH(name, "source ~/.profile && cd electron && python script/cpplint.py")
+      vmSSH(name, "sh --rcfile ~/.profile -c \"cd electron; python script/cpplint.py\"")
     }
     stage('VM Build') {
-      vmSSH(name, "source ~/.profile && cd electron && python script/build.py -c R")
+      vmSSH(name, "sh --rcfile ~/.profile -c \"cd electron; python script/build.py -c R\"")
     }
     stage('VM Create Dist') {
-      vmSSH(name, "source ~/.profile && cd electron && python script/create-dist.py")
+      vmSSH(name, "sh --rcfile ~/.profile -c \"cd electron; python script/create-dist.py\"")
     }
     stage('VM Upload') {
       retry(3) {
-        vmSSH(name, "source ~/.profile && cd electron && python script/upload.py")
+        vmSSH(name, "sh --rcfile ~/.profile -c \"cd electron; python script/upload.py\"")
       }
     }
   }
@@ -126,7 +126,6 @@ def setEnvVagrant(name) {
   vmSSH(name, "echo \"export ELECTRON_S3_SECRET_KEY=${env.ELECTRON_S3_SECRET_KEY}\" >> ~/.profile")
   vmSSH(name, "echo \"export ELECTRON_S3_ACCESS_KEY=${env.ELECTRON_S3_ACCESS_KEY}\" >> ~/.profile")
   vmSSH(name, "echo \"export ELECTRON_GITHUB_TOKEN=${env.ELECTRON_GITHUB_TOKEN}\" >> ~/.profile")
-  vmSSH(name, "source ~/.profile")
 }
 
 timestamps {
@@ -153,7 +152,7 @@ timestamps {
                 destroyVM('win-x64')
                 startVM('win-x64')
                 setEnvVagrant('win-x64')
-                buildElectronVagrant('win-x64')
+                buildElectronVagrant('win-x64', 'npm.cmd')
               }
             } finally {
               destroyVM('win-x64')
@@ -169,7 +168,7 @@ timestamps {
                 destroyVM('win-ia32')
                 startVM('win-ia32')
                 setEnvVagrant('win-ia32')
-                buildElectronVagrant('win-ia32')
+                buildElectronVagrant('win-ia32', 'npm.cmd')
               }
             } finally {
               destroyVM('win-ia32')

@@ -104,13 +104,13 @@ timestamps {
     // LIBCHROMIUMCONTENT_COMMIT - get from previous job
 
     parallel (
-      mac: {
-        node {
-          withEnv(['TARGET_ARCH=x64']) {
-            buildElectron()
-          }
-        }
-      },
+//      mac: {
+//        node {
+//          withEnv(['TARGET_ARCH=x64']) {
+//            buildElectron()
+ //         }
+ //       }
+ //     },
       winx64: {
         node {
           withEnv(['TARGET_ARCH=x64']) {

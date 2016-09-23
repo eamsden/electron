@@ -63,7 +63,7 @@ def buildElectronVagrant(name) {
     deleteDir()
   }
   stage('Checkout') {
-    vmSSH(name, "'git clone https://github.com/brave/electron.git electron'")
+    vmSSH(name, "'git clone https://github.com/brave/electron.git'")
   }
   stage('Bootstrap') {
     retry(3) {
@@ -113,9 +113,12 @@ timestamps {
         node {
           withEnv(['TARGET_ARCH=x64']) {
             destroyVM('win-x64')
-            startVM('win-x64')
-            buildElectronVagrant('win-x64')
-            destroyVM('win-x64')
+            try {
+              startVM('win-x64')
+              buildElectronVagrant('win-x64')
+            } finally {
+              destroyVM('win-x64')
+            }
           }
         }
       }

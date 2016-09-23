@@ -33,7 +33,7 @@ def setLinuxDisplay(name) {
 }
 
 def npmInstall(name, cmd = 'npm') {
-  vmSSH(name, "${cmd} install npm@3.3.12")
+  vmSSH(name, "cd electron && ${cmd} install npm@3.3.12")
 }
 
 def buildElectron() {
@@ -68,7 +68,7 @@ def buildElectron() {
   }
 }
 
-def buildElectronVagrant(name) {
+def buildElectronVagrant(name, npmCmd = 'npm') {
   stage('Clean') {
     deleteDir()
   }
@@ -79,6 +79,7 @@ def buildElectronVagrant(name) {
     retry(3) {
       timeout(30) {
         vmSSH(name, "source ~/.profile && cd electron && python script/clean.py")
+        npmInstall(name, npmCmd)
         vmSSH(name, "source ~/.profile && cd electron && python script/bootstrap.py -v --target_arch ${env.TARGET_ARCH}")
       }
     }
@@ -106,6 +107,19 @@ def installNode(name) {
   }
 }
 
+def setEnvVagrant(name) {
+  vmSSH(name, "echo \"export TARGET_ARCH=${env.TARGET_ARCH}\" >> ~/.profile")
+  vmSSH(name, "echo \"export ELECTRON_S3_BUCKEY=${env.ELECTRON_S3_BUCKEY}\" >> ~/.profile")
+  vmSSH(name, "echo \"export LIBCHROMIUMCONTENT_MIRROR=${env.LIBCHROMIUMCONTENT_MIRROR}\" >> ~/.profile")
+  vmSSH(name, "echo \"export CI=${env.CI}\" >> ~/.profile")
+  vmSSH(name, "echo \"export ELECTRON_RELEASE=${env.ELECTRON_RELEASE}\" >> ~/.profile")
+  vmSSH(name, "echo \"export GYP_DEFINES=${env.GYP_DEFINES}\" >> ~/.profile")
+  vmSSH(name, "echo \"export ELECTRON_S3_SECRET_KEY=${env.ELECTRON_S3_SECRET_KEY}\" >> ~/.profile")
+  vmSSH(name, "echo \"export ELECTRON_S3_ACCESS_KEY=${env.ELECTRON_S3_ACCESS_KEY}\" >> ~/.profile")
+  vmSSH(name, "echo \"export ELECTRON_GITHUB_TOKEN=${env.ELECTRON_GITHUB_TOKEN}\" >> ~/.profile")
+  vmSSH(name, "source ~/.profile")
+}
+
 timestamps {
   withEnv([
     'ELECTRON_S3_BUCKET=brave-laptop-binaries',
@@ -128,8 +142,8 @@ timestamps {
             destroyVM('win-x64')
             try {
               startVM('win-x64')
-              npmInstall('win-x64', 'npm.cmd')
-              buildElectronVagrant('win-x64')
+              setEnvVagrant('win-x64')
+              buildElectronVagrant('win-x64', 'npm.cmd')
             } finally {
               destroyVM('win-x64')
             }
@@ -142,8 +156,8 @@ timestamps {
             destroyVM('win-ia32')
             try {
               startVM('win-ia32')
-              npmInstall('win-ia32', 'npm.cmd')
-              buildElectronVagrant('win-ia32')
+              setEnvVagrant('win-ia32')
+              buildElectronVagrant('win-ia32', 'npm.cmd')
             } finally {
               destroyVM('win-ia32')
             }
@@ -156,9 +170,9 @@ timestamps {
             destroyVM('linux-x64')
             try {
               startVM('linux-x64')
+              setEnvVagrant('linux-x64')
               installNode('linux-x64')
               setLinuxDisplay('linux-x64')
-              npmInstall('linux-x64')
               buildElectronVagrant('linux-x64')
             } finally {
               destroyVM('linux-x64')

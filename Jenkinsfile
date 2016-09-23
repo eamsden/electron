@@ -1,5 +1,5 @@
 def startVM(name) {
-  stage("Create VM", 1) {
+  stage(name: "Create VM", concurrency: 1) {
     echo "Creating /Users/Shared/Jenkins/vagrant/electron-vagrant ${name}"
     withEnv(["VAGRANT_DOTFILE_PATH=.${env.BUILD_TAG}", "VAGRANT_CWD=/Users/Shared/Jenkins/vagrant/electron-vagrant"]) {
       sh "vagrant up ${name}"
@@ -40,7 +40,7 @@ def npmInstall(name, cmd = 'npm') {
 }
 
 def buildElectron() {
-  stage('Build Electron', 1) {
+  stage(name: 'Build Electron', concurrency: 1) {
     stage('Clean') {
       deleteDir()
     }
@@ -74,7 +74,7 @@ def buildElectron() {
 }
 
 def buildElectronVagrant(name, npmCmd = 'npm') {
-  stage("Build Electron VM ${name}", 1) {
+  stage(name: "Build Electron VM ${name}", concurrency: 1) {
     stage('VM Clean') {
       deleteDir()
     }

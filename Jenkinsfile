@@ -2,7 +2,7 @@ def electronVagrantfilePath = '/Users/Shared/Jenkins/vagrant/electron-vagrant'
 
 def startVM(vagrantfilePath, name) {
   stage("Create ${vagrantfilePath} ${name} VM") {
-    withEnv(["VAGRANT_DOTFILE_PATH=${env.WORKSPACE}", "VAGRANT_CWD=${vagrantfilePath}"]) {
+    withEnv(["VAGRANT_DOTFILE_PATH=${env.BUILD_TAG}", "VAGRANT_CWD=${vagrantfilePath}"]) {
       sh "vagrant up ${name}"
     }
   }
@@ -10,7 +10,7 @@ def startVM(vagrantfilePath, name) {
 
 def stopVM(vagrantfilePath, name) {
   stage("Stop ${vagrantfilePath} ${name} VM") {
-    withEnv(["VAGRANT_DOTFILE_PATH=${env.WORKSPACE}", "VAGRANT_CWD=${vagrantfilePath}"]) {
+    withEnv(["VAGRANT_DOTFILE_PATH=${env.BUILD_TAG}", "VAGRANT_CWD=${vagrantfilePath}"]) {
       sh "vagrant halt ${name}"
     }
   }
@@ -18,14 +18,14 @@ def stopVM(vagrantfilePath, name) {
 
 def destroyVM(vagrantfilePath, name) {
   stage("Destroy ${vagrantfilePath} ${name} VM") {
-    withEnv(["VAGRANT_DOTFILE_PATH=${env.WORKSPACE}", "VAGRANT_CWD=${vagrantfilePath}"]) {
+    withEnv(["VAGRANT_DOTFILE_PATH=${env.BUILD_TAG}", "VAGRANT_CWD=${vagrantfilePath}"]) {
       sh "vagrant destroy -f ${name}"
     }
   }
 }
 
 def vmSSH(vagrantFilePath, name, command) {
-  withEnv(["VAGRANT_DOTFILE_PATH=${env.WORKSPACE}", "VAGRANT_CWD=${vagrantfilePath}"]) {
+  withEnv(["VAGRANT_DOTFILE_PATH=${env.BUILD_TAG}", "VAGRANT_CWD=${vagrantfilePath}"]) {
     sh "vagrant ssh -c ${command}"
   }
 }
@@ -108,17 +108,17 @@ timestamps {
             destroyVM(electronVagrantfilePath, 'linux-x64')
           }
         }
-      },
-      linuxia32: {
-        node {
-          withEnv(['TARGET_ARCH=ia32']) {
-            startVM(electronVagrantfilePath, 'linux-ia32')
-            installNode()
-            buildElectron()
-            destroyVM(electronVagrantfilePath, 'linux-ia32')
-          }
-        }
       }
+//      linuxia32: {
+//        node {
+//          withEnv(['TARGET_ARCH=ia32']) {
+//            startVM(electronVagrantfilePath, 'linux-ia32')
+//            installNode()
+//            buildElectron()
+//            destroyVM(electronVagrantfilePath, 'linux-ia32')
+//          }
+//        }
+//      }
     )
   }
 }

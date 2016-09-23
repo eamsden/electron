@@ -63,27 +63,27 @@ def buildElectronVagrant(name) {
     deleteDir()
   }
   stage('Checkout') {
-    vmSSH(name, "'git clone https://github.com/brave/electron.git .'")
+    vmSSH(name, "'git clone https://github.com/brave/electron.git electron'")
   }
   stage('Bootstrap') {
     retry(3) {
       timeout(30) {
-        vmSSH(name, "'python script/bootstrap.py -v --target_arch ${env.TARGET_ARCH}'")
+        vmSSH(name, "'source ~/.profile && cd electron && python script/bootstrap.py -v --target_arch ${env.TARGET_ARCH}'")
       }
     }
   }
   stage('Lint') {
-    vmSSH(name, "'python script/cpplint.py'")
+    vmSSH(name, "'source ~/.profile && cd electron && python script/cpplint.py'")
   }
   stage('Build') {
-    vmSSH(name, "'python script/build.py -c R'")
+    vmSSH(name, "'source ~/.profile && cd electron && python script/build.py -c R'")
   }
   stage('Create Dist') {
-    vmSSH(name, "'python script/create-dist.py'")
+    vmSSH(name, "'source ~/.profile && cd electron && python script/create-dist.py'")
   }
   stage('Upload') {
     retry(3) {
-      vmSSH(name, "'python script/upload.py'")
+      vmSSH(name, "'source ~/.profile && cd electron && python script/upload.py'")
     }
   }
 }

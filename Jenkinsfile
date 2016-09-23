@@ -38,6 +38,7 @@ def buildElectron() {
   stage('Bootstrap') {
     retry(3) {
       timeout(30) {
+        sh "python script/clean.py"
         sh "python script/bootstrap.py -v --target_arch ${env.TARGET_ARCH}"
       }
     }
@@ -68,6 +69,7 @@ def buildElectronVagrant(name) {
   stage('Bootstrap') {
     retry(3) {
       timeout(30) {
+        vmSSH(name, "'source ~/.profile && cd electron && python script/clean.py'")
         vmSSH(name, "'source ~/.profile && cd electron && python script/bootstrap.py -v --target_arch ${env.TARGET_ARCH}'")
       }
     }

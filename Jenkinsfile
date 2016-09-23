@@ -1,5 +1,5 @@
 def startVM(name) {
-  milestone(ordinal: 1, label: 'Create VM') {
+  lock("create-vm") {
     echo "Creating /Users/Shared/Jenkins/vagrant/electron-vagrant ${name}"
     withEnv(["VAGRANT_DOTFILE_PATH=.${env.BUILD_TAG}", "VAGRANT_CWD=/Users/Shared/Jenkins/vagrant/electron-vagrant"]) {
       sh "vagrant up ${name}"
@@ -40,7 +40,7 @@ def npmInstall(name, cmd = 'npm') {
 }
 
 def buildElectron() {
-  milestone(ordinal: 2, label: 'Build Electron') {
+  lock('build-electorn') {
     stage('Clean') {
       deleteDir()
     }
@@ -74,7 +74,7 @@ def buildElectron() {
 }
 
 def buildElectronVagrant(name, npmCmd = 'npm') {
-  milestone(ordinal: 3, label: 'Build Electron VM ${name}') {
+  lock("build-electron-${name}") {
     stage('VM Clean') {
       deleteDir()
     }

@@ -148,16 +148,15 @@ timestamps {
       winx64: {
         node {
           withEnv(['TARGET_ARCH=x64']) {
-              try {
-                retry(2) {
-                  destroyVM('win-x64')
-                  startVM('win-x64')
-                  setEnvVagrant('win-x64')
-                  buildElectronVagrant('win-x64')
-                }
-              } finally {
+            try {
+              retry(2) {
                 destroyVM('win-x64')
+                startVM('win-x64')
+                setEnvVagrant('win-x64')
+                buildElectronVagrant('win-x64')
               }
+            } finally {
+              destroyVM('win-x64')
             }
           }
         }

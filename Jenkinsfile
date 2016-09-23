@@ -98,9 +98,11 @@ def installNode(name) {
 timestamps {
   withEnv([
     'ELECTRON_S3_BUCKET=brave-laptop-binaries',
-    'LIBCHROMIUMCONTENT_MIRROR=https://s3.amazonaws.com/brave-laptop-binaries/libchromiumcontent']) {
+    'LIBCHROMIUMCONTENT_MIRROR=https://s3.amazonaws.com/brave-laptop-binaries/libchromiumcontent',
+    'CI=1',
+    'ELECTRON_RELEASE=1'
+]) {
     // LIBCHROMIUMCONTENT_COMMIT - get from previous job
-
     parallel (
       mac: {
         node {
@@ -148,21 +150,21 @@ timestamps {
             }
           }
         }
-      },
-      linuxia32: {
-        node {
-          withEnv(['TARGET_ARCH=ia32']) {
-            startVM('linux-ia32')
-            try {
-              installNode('linux-ia32')
-              installNode('linux-ia32')
-              buildElectronVagrant('linux-ia32')
-            } finally {
-              destroyVM('linux-ia32')
-            }
-          }
-        }
       }
+//      linuxia32: {
+//        node {
+//          withEnv(['TARGET_ARCH=ia32']) {
+//            startVM('linux-ia32')
+//           try {
+//              installNode('linux-ia32')
+//              installNode('linux-ia32')
+//              buildElectronVagrant('linux-ia32')
+//            } finally {
+//              destroyVM('linux-ia32')
+//            }
+//          }
+//        }
+//      }
     )
   }
 }

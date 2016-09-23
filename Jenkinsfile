@@ -121,7 +121,7 @@ timestamps {
             }
           }
         }
-      }
+      },
       winia32: {
         node {
           withEnv(['TARGET_ARCH=ia32']) {
@@ -148,7 +148,7 @@ timestamps {
             }
           }
         }
-      }
+      },
       linuxia32: {
         node {
           withEnv(['TARGET_ARCH=ia32']) {

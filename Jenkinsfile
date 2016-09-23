@@ -85,11 +85,9 @@ def buildElectronVagrant(name, npmCmd = 'npm') {
     }
     stage('VM Bootstrap') {
       retry(3) {
-        timeout(30) {
-          vmSSH(name, "source ~/.profile && cd electron && python script/clean.py")
-          npmInstall(name, npmCmd)
-          vmSSH(name, "source ~/.profile && cd electron && python script/bootstrap.py -v --target_arch ${env.TARGET_ARCH}")
-        }
+        vmSSH(name, "source ~/.profile && cd electron && python script/clean.py")
+        npmInstall(name, npmCmd)
+        vmSSH(name, "source ~/.profile && cd electron && python script/bootstrap.py -v --target_arch ${env.TARGET_ARCH}")
       }
     }
     stage('VM Lint') {
@@ -150,12 +148,13 @@ timestamps {
       winx64: {
         node {
           withEnv(['TARGET_ARCH=x64']) {
-            destroyVM('win-x64')
-            retry(2) {
               try {
-                startVM('win-x64')
-                setEnvVagrant('win-x64')
-                buildElectronVagrant('win-x64', 'npm.cmd')
+                retry(2) {
+                  destroyVM('win-x64')
+                  startVM('win-x64')
+                  setEnvVagrant('win-x64')
+                  buildElectronVagrant('win-x64')
+                }
               } finally {
                 destroyVM('win-x64')
               }
@@ -166,37 +165,37 @@ timestamps {
       winia32: {
         node {
           withEnv(['TARGET_ARCH=ia32']) {
-            destroyVM('win-ia32')
-            retry(2) {
-              try {
+            try {
+              retry(2) {
+                destroyVM('win-ia32')
                 startVM('win-ia32')
                 setEnvVagrant('win-ia32')
-                buildElectronVagrant('win-ia32', 'npm.cmd')
-              } finally {
-                destroyVM('win-ia32')
+                buildElectronVagrant('win-ia32')
               }
-            }
-          }
-        }
-      },
-      linuxx64: {
-        node {
-          withEnv(['TARGET_ARCH=x64']) {
-            destroyVM('linux-x64')
-            retry(2) {
-              try {
-                startVM('linux-x64')
-                setEnvVagrant('linux-x64')
-                installNode('linux-x64')
-                setLinuxDisplay('linux-x64')
-                buildElectronVagrant('linux-x64')
-              } finally {
-                destroyVM('linux-x64')
-              }
+            } finally {
+              destroyVM('win-ia32')
             }
           }
         }
       }
+//      linuxx64: {
+//        node {
+//          withEnv(['TARGET_ARCH=x64']) {
+//            destroyVM('linux-x64')
+//            retry(2) {
+//              try {
+//                startVM('linux-x64')
+//                setEnvVagrant('linux-x64')
+//                installNode('linux-x64')
+//                setLinuxDisplay('linux-x64')
+//                buildElectronVagrant('linux-x64')
+//              } finally {
+//                destroyVM('linux-x64')
+//              }
+//            }
+//          }
+//        }
+//      }
 //      linuxia32: {
 //        node {
 //          withEnv(['TARGET_ARCH=ia32']) {

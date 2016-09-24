@@ -146,7 +146,7 @@ timestamps {
                 destroyVM('win-x64')
                 startVM('win-x64')
                 setEnvVagrant('win-x64')
-                buildElectronVagrant('win-x64', 'npm.cmd', 'PATH=$PATH:/cygdrive/c/Program\ Files\ \(x86\)/Windows\ Kits/10/Debuggers/x64')
+                buildElectronVagrant('win-x64', 'npm.cmd', 'PATH=$PATH:/cygdrive/c/Program\\ Files\\ (x86)/Windows\\ Kits/10/Debuggers/x64')
               }
             } finally {
               destroyVM('win-x64')

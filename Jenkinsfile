@@ -25,9 +25,16 @@ def destroyVM(name) {
   }
 }
 
+def sshEnv() {
+  return (String[]) ['TARGET_ARCH', 'ELECTRON_S3_BUCKET', 'LIBCHROMIUMCONTENT_MIRROR',
+    'CI', 'ELECTRON_RELEASE', 'GYP_DEFINES', 'ELECTRON_S3_SECRET_KEY', 'ELECTRON_S3_ACCESS_KEY',
+    'ELECTRON_GITHUB_TOKEN'].collect { "${it}=${env[$it]}" }.join(' ')
+}
+
 def vmSSH(name, command) {
+  def envVars = sshEnv()
   withEnv(["VAGRANT_DOTFILE_PATH=.${env.BUILD_TAG}", "VAGRANT_CWD=/Users/Shared/Jenkins/vagrant/electron-vagrant"]) {
-    sh "vagrant ssh ${name} -c '${sshEnv()} ${command}'"
+    sh "vagrant ssh ${name} -c '${envVars} ${command}'"
   }
 }
 
@@ -114,12 +121,6 @@ def installNode(name) {
     }
     vmSSH(name, "sudo apt-get install -y nodejs")
   }
-}
-
-def sshEnv(name) {
-  return (String[]) ['TARGET_ARCH', 'ELECTRON_S3_BUCKET', 'LIBCHROMIUMCONTENT_MIRROR',
-    'CI', 'ELECTRON_RELEASE', 'GYP_DEFINES', 'ELECTRON_S3_SECRET_KEY', 'ELECTRON_S3_ACCESS_KEY',
-    'ELECTRON_GITHUB_TOKEN'].collect { "${it}=${env[$it]}" }.join(' ')
 }
 
 timestamps {

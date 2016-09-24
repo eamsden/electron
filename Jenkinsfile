@@ -27,7 +27,7 @@ def destroyVM(name) {
 
 def vmSSH(name, command) {
   withEnv(["VAGRANT_DOTFILE_PATH=.${env.BUILD_TAG}", "VAGRANT_CWD=/Users/Shared/Jenkins/vagrant/electron-vagrant"]) {
-    sh "vagrant ssh ${name} -c '${command}'"
+    sh "vagrant ssh ${name} -c '${sshEnv()} ${command}'"
   }
 }
 
@@ -36,7 +36,7 @@ def setLinuxDisplay(name) {
 }
 
 def npmInstall(name, cmd = 'npm') {
-  vmSSH(name, "sh -c \"cd electron; ${cmd} install npm@3.3.12\"")
+  vmSSH(name, "cd electron; ${cmd} install npm@3.3.12")
 }
 
 def buildElectron() {
@@ -73,7 +73,7 @@ def buildElectron() {
   }
 }
 
-def buildElectronVagrant(name, npmCmd = 'npm') {
+def buildElectronVagrant(name, npmCmd = 'npm', env = '') {
   lock("build-electron-${name}") {
     stage('VM Clean') {
       deleteDir()
@@ -85,23 +85,23 @@ def buildElectronVagrant(name, npmCmd = 'npm') {
     }
     stage('VM Bootstrap') {
       retry(3) {
-        vmSSH(name, "sh --rcfile ~/.profile -c \"cd electron; python script/clean.py\"")
+        vmSSH(name, "cd electron; python script/clean.py")
         npmInstall(name, npmCmd)
-        vmSSH(name, "sh --rcfile ~/.profile -c \"cd electron; python script/bootstrap.py -v --target_arch ${env.TARGET_ARCH}\"")
+        vmSSH(name, "${env} cd electron; python script/bootstrap.py -v --target_arch ${env.TARGET_ARCH}")
       }
     }
     stage('VM Lint') {
-      vmSSH(name, "sh --rcfile ~/.profile -c \"cd electron; python script/cpplint.py\"")
+      vmSSH(name, "${env} cd electron; python script/cpplint.py")
     }
     stage('VM Build') {
-      vmSSH(name, "sh --rcfile ~/.profile -c \"cd electron; python script/build.py -c R\"")
+      vmSSH(name, "${env} cd electron; python script/build.py -c R")
     }
     stage('VM Create Dist') {
-      vmSSH(name, "sh --rcfile ~/.profile -c \"cd electron; python script/create-dist.py\"")
+      vmSSH(name, "${env} cd electron; python script/create-dist.py")
     }
     stage('VM Upload') {
       retry(3) {
-        vmSSH(name, "sh --rcfile ~/.profile -c \"cd electron; python script/upload.py\"")
+        vmSSH(name, "${env} cd electron; python script/upload.py")
       }
     }
   }
@@ -116,16 +116,10 @@ def installNode(name) {
   }
 }
 
-def setEnvVagrant(name) {
-  vmSSH(name, "echo \"export TARGET_ARCH=${env.TARGET_ARCH}\" >> ~/.profile")
-  vmSSH(name, "echo \"export ELECTRON_S3_BUCKET=${env.ELECTRON_S3_BUCKET}\" >> ~/.profile")
-  vmSSH(name, "echo \"export LIBCHROMIUMCONTENT_MIRROR=${env.LIBCHROMIUMCONTENT_MIRROR}\" >> ~/.profile")
-  vmSSH(name, "echo \"export CI=${env.CI}\" >> ~/.profile")
-  vmSSH(name, "echo \"export ELECTRON_RELEASE=${env.ELECTRON_RELEASE}\" >> ~/.profile")
-  vmSSH(name, "echo \"export GYP_DEFINES=${env.GYP_DEFINES}\" >> ~/.profile")
-  vmSSH(name, "echo \"export ELECTRON_S3_SECRET_KEY=${env.ELECTRON_S3_SECRET_KEY}\" >> ~/.profile")
-  vmSSH(name, "echo \"export ELECTRON_S3_ACCESS_KEY=${env.ELECTRON_S3_ACCESS_KEY}\" >> ~/.profile")
-  vmSSH(name, "echo \"export ELECTRON_GITHUB_TOKEN=${env.ELECTRON_GITHUB_TOKEN}\" >> ~/.profile")
+def sshEnv(name) {
+  return (String[]) ['TARGET_ARCH', 'ELECTRON_S3_BUCKET', 'LIBCHROMIUMCONTENT_MIRROR',
+    'CI', 'ELECTRON_RELEASE', 'GYP_DEFINES', 'ELECTRON_S3_SECRET_KEY', 'ELECTRON_S3_ACCESS_KEY',
+    'ELECTRON_GITHUB_TOKEN'].collect { "${it}=${env[$it]}" }.join(' ')
 }
 
 timestamps {
@@ -146,36 +140,36 @@ timestamps {
 //      },
       winx64: {
         node {
-          withEnv(['TARGET_ARCH=x64']) {
+          withEnv(['TARGET_ARCH=x64', 'PLATFORM=win']) {
             try {
               retry(2) {
                 destroyVM('win-x64')
                 startVM('win-x64')
                 setEnvVagrant('win-x64')
-                buildElectronVagrant('win-x64', 'npm.cmd')
+                buildElectronVagrant('win-x64', 'npm.cmd', 'PATH=$PATH:/cygdrive/c/Program\ Files\ \(x86\)/Windows\ Kits/10/Debuggers/x64')
               }
             } finally {
               destroyVM('win-x64')
             }
           }
         }
-      },
-      winia32: {
-        node {
-          withEnv(['TARGET_ARCH=ia32']) {
-            try {
-              retry(2) {
-                destroyVM('win-ia32')
-                startVM('win-ia32')
-                setEnvVagrant('win-ia32')
-                buildElectronVagrant('win-ia32', 'npm.cmd')
-              }
-            } finally {
-              destroyVM('win-ia32')
-            }
-          }
-        }
       }
+//      winia32: {
+//        node {
+//          withEnv(['TARGET_ARCH=ia32', 'PLATFORM=win']) {
+//            try {
+//              retry(2) {
+//                destroyVM('win-ia32')
+//                startVM('win-ia32')
+//                setEnvVagrant('win-ia32')
+//                buildElectronVagrant('win-ia32', 'npm.cmd', 'PATH=$PATH:/cygdrive/c/Program\ Files\ \(x86\)/Windows\ Kits/10/Debuggers/x86')
+//              }
+//            } finally {
+//              destroyVM('win-ia32')
+//            }
+//          }
+//        }
+//      },
 //      linuxx64: {
 //        node {
 //          withEnv(['TARGET_ARCH=x64']) {

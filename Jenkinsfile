@@ -26,7 +26,7 @@ def destroyVM(name) {
 }
 
 def sshEnv() {
-  return (String[]) ['TARGET_ARCH', 'ELECTRON_S3_BUCKET', 'LIBCHROMIUMCONTENT_MIRROR',
+  return ['TARGET_ARCH', 'ELECTRON_S3_BUCKET', 'LIBCHROMIUMCONTENT_MIRROR',
     'CI', 'ELECTRON_RELEASE', 'GYP_DEFINES', 'ELECTRON_S3_SECRET_KEY', 'ELECTRON_S3_ACCESS_KEY',
     'ELECTRON_GITHUB_TOKEN'].collect { "${it}=${env[$it]}" }.join(' ')
 }

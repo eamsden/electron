@@ -37,7 +37,7 @@ def sshEnv() {
 def vmSSH(name, command) {
   def envVars = sshEnv()
   withEnv(["VAGRANT_DOTFILE_PATH=.${env.BUILD_TAG}", "VAGRANT_CWD=/Users/Shared/Jenkins/vagrant/electron-vagrant"]) {
-    sh "vagrant ssh ${name} -c '${envVars} ${command} && echo \"done ${command}\"'"
+    sh "vagrant ssh ${name} -c '${envVars} ${command}'"
   }
 }
 
@@ -58,13 +58,11 @@ def buildElectron() {
       checkout scm
     }
     stage('Bootstrap') {
-      retry(3) {
-        timeout(30) {
-          sh "python script/clean.py"
-          sh "npm install npm@3.3.12"
-          sh "python script/bootstrap.py -v --target_arch ${env.TARGET_ARCH}"
-        }
-      }
+//      retry(3) {
+        sh "python script/clean.py"
+//        sh "npm install npm@3.3.12"
+        sh "python script/bootstrap.py -v --target_arch ${env.TARGET_ARCH}"
+  //    }
     }
     stage('Lint') {
       sh "python script/cpplint.py"
@@ -76,9 +74,9 @@ def buildElectron() {
       sh "python script/create-dist.py"
     }
     stage('Upload') {
-      retry(3) {
+      //retry(3) {
         sh "python script/upload.py"
-      }
+      //}
     }
   }
 }
@@ -89,17 +87,17 @@ def buildElectronVagrant(name, npmCmd = 'npm', env = '') {
       deleteDir()
     }
     stage('VM Checkout') {
-      retry(3) {
+      //retry(3) {
         // TODO(bridiver) - recreate the vm without this
         vmSSH(name, "rm -rf electron && git clone https://github.com/brave/electron.git")
-      }
+      //}
     }
     stage('VM Bootstrap') {
-      retry(3) {
+      //retry(3) {
         vmSSH(name, "cd electron && python script/clean.py")
-        npmInstall(name, npmCmd)
+        // npmInstall(name, npmCmd)
         vmSSH(name, "${env} cd electron && python script/bootstrap.py -v --target_arch ${env.TARGET_ARCH}")
-      }
+      //}
     }
     stage('VM Lint') {
       vmSSH(name, "${env} cd electron && python script/cpplint.py")
@@ -111,18 +109,20 @@ def buildElectronVagrant(name, npmCmd = 'npm', env = '') {
       vmSSH(name, "${env} cd electron && python script/create-dist.py")
     }
     stage('VM Upload') {
-      retry(3) {
+  //    retry(3) {
+      withEnv(['CI=1']) {
         vmSSH(name, "${env} cd electron && python script/upload.py")
       }
+  //    }
     }
   }
 }
 
 def installNode(name) {
   stage('install node') {
-    retry(3) {
+//    retry(3) {
       vmSSH(name, "curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -")
-    }
+//    }
     vmSSH(name, "sudo apt-get install -y nodejs")
   }
 }
@@ -130,9 +130,7 @@ def installNode(name) {
 timestamps {
   withEnv([
     'ELECTRON_S3_BUCKET=brave-laptop-binaries',
-    'LIBCHROMIUMCONTENT_MIRROR=https://s3.amazonaws.com/brave-laptop-binaries/libchromiumcontent',
-    'CI=1',
-    'ELECTRON_RELEASE=1'
+    'LIBCHROMIUMCONTENT_MIRROR=https://s3.amazonaws.com/brave-laptop-binaries/libchromiumcontent'
 ]) {
     // LIBCHROMIUMCONTENT_COMMIT - get from previous job
     parallel (
@@ -147,11 +145,11 @@ timestamps {
         node {
           withEnv(['TARGET_ARCH=x64', 'PLATFORM=win']) {
             try {
-              retry(2) {
+//              retry(2) {
                 destroyVM('win-x64')
                 startVM('win-x64')
                 buildElectronVagrant('win-x64', 'npm.cmd', 'PATH=$PATH:/cygdrive/c/Program\\ Files\\ (x86)/Windows\\ Kits/10/Debuggers/x64')
-              }
+//              }
             } finally {
               destroyVM('win-x64')
             }

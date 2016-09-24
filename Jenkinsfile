@@ -90,7 +90,7 @@ def buildElectronVagrant(name, npmCmd = 'npm', env = '') {
     }
     stage('VM Checkout') {
       retry(3) {
-        vmSSH(name, "git clone https://github.com/brave/electron.git")
+        vmSSH(name, "rm -rf electron; git clone https://github.com/brave/electron.git")
       }
     }
     stage('VM Bootstrap') {

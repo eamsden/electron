@@ -145,7 +145,6 @@ timestamps {
               retry(2) {
                 destroyVM('win-x64')
                 startVM('win-x64')
-                setEnvVagrant('win-x64')
                 buildElectronVagrant('win-x64', 'npm.cmd', 'PATH=$PATH:/cygdrive/c/Program\\ Files\\ (x86)/Windows\\ Kits/10/Debuggers/x64')
               }
             } finally {
@@ -161,7 +160,6 @@ timestamps {
 //              retry(2) {
 //                destroyVM('win-ia32')
 //                startVM('win-ia32')
-//                setEnvVagrant('win-ia32')
 //                buildElectronVagrant('win-ia32', 'npm.cmd', 'PATH=$PATH:/cygdrive/c/Program\ Files\ \(x86\)/Windows\ Kits/10/Debuggers/x86')
 //              }
 //            } finally {
@@ -177,7 +175,6 @@ timestamps {
 //            retry(2) {
 //              try {
 //                startVM('linux-x64')
-//                setEnvVagrant('linux-x64')
 //                installNode('linux-x64')
 //                setLinuxDisplay('linux-x64')
 //                buildElectronVagrant('linux-x64')
@@ -193,7 +190,6 @@ timestamps {
 //          withEnv(['TARGET_ARCH=ia32']) {
 //            startVM('linux-ia32')
 //           try {
-//              installNode('linux-ia32')
 //              installNode('linux-ia32')
 //              buildElectronVagrant('linux-ia32')
 //            } finally {

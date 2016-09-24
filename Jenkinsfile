@@ -37,7 +37,7 @@ def sshEnv() {
 def vmSSH(name, command) {
   def envVars = sshEnv()
   withEnv(["VAGRANT_DOTFILE_PATH=.${env.BUILD_TAG}", "VAGRANT_CWD=/Users/Shared/Jenkins/vagrant/electron-vagrant"]) {
-    sh "vagrant ssh ${name} -c '${envVars} ${command}'"
+    sh "vagrant ssh ${name} -c '${envVars} ${command} && echo \"done ${command}\"'"
   }
 }
 
@@ -46,7 +46,7 @@ def setLinuxDisplay(name) {
 }
 
 def npmInstall(name, cmd = 'npm') {
-  vmSSH(name, "cd electron; ${cmd} install npm@3.3.12")
+  vmSSH(name, "cd electron && ${cmd} install npm@3.3.12")
 }
 
 def buildElectron() {
@@ -90,28 +90,29 @@ def buildElectronVagrant(name, npmCmd = 'npm', env = '') {
     }
     stage('VM Checkout') {
       retry(3) {
-        vmSSH(name, "rm -rf electron; git clone https://github.com/brave/electron.git")
+        // TODO(bridiver) - recreate the vm without this
+        vmSSH(name, "rm -rf electron && git clone https://github.com/brave/electron.git")
       }
     }
     stage('VM Bootstrap') {
       retry(3) {
-        vmSSH(name, "cd electron; python script/clean.py")
+        vmSSH(name, "cd electron && python script/clean.py")
         npmInstall(name, npmCmd)
-        vmSSH(name, "${env} cd electron; python script/bootstrap.py -v --target_arch ${env.TARGET_ARCH}")
+        vmSSH(name, "${env} cd electron && python script/bootstrap.py -v --target_arch ${env.TARGET_ARCH}")
       }
     }
     stage('VM Lint') {
-      vmSSH(name, "${env} cd electron; python script/cpplint.py")
+      vmSSH(name, "${env} cd electron && python script/cpplint.py")
     }
     stage('VM Build') {
-      vmSSH(name, "${env} cd electron; python script/build.py -c R")
+      vmSSH(name, "${env} cd electron && python script/build.py -c R")
     }
     stage('VM Create Dist') {
-      vmSSH(name, "${env} cd electron; python script/create-dist.py")
+      vmSSH(name, "${env} cd electron && python script/create-dist.py")
     }
     stage('VM Upload') {
       retry(3) {
-        vmSSH(name, "${env} cd electron; python script/upload.py")
+        vmSSH(name, "${env} cd electron && python script/upload.py")
       }
     }
   }
